@@ -31,6 +31,9 @@ public class RegistryImpl extends UnicastRemoteObject implements IRegistry {
 		if (IWorker.class.isInstance(o)) {
 			workersMap.put(newObjectId, (IWorker) o);
 			objectAdded = true;
+			if (manager != null) {
+				manager.refresh();
+			}
 		} else {
 			if (IManager.class.isInstance(o)) {
 				manager = (IManager) o;

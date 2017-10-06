@@ -4,10 +4,12 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import interfacesrmi.IClient;
+import interfacesrmi.IManager;
 import interfacesrmi.IWorker;
 
 public class WorkerImpl extends UnicastRemoteObject implements IWorker {
@@ -78,14 +80,86 @@ public class WorkerImpl extends UnicastRemoteObject implements IWorker {
 		
 		
 	}
+	
+	private class WorkerRunnable implements Runnable{
+		
+		private Map<Task, IClient> tasksMap;
+		private boolean stopRunning = false;
+		private IManager manager;
+		
+		public WorkerRunnable(Map<Task, IClient> tasksMap, IManager manager) {
+			this.tasksMap = tasksMap;
+			this.manager = manager;
+		}
+		
+		@Override
+		public void run() {
+			System.out.println("WORKER RUNNABLE: Starting...");
+			while(!stopRunning) {
+				if (!tasksMap.isEmpty()) {
+					
+					synchronized(tasksMap) {
+						for (Iterator<Map.Entry<Task, IClient>> it = tasksMap.entrySet().iterator(); it.hasNext(); ) {
+							Map.Entry<Task, IClient> taskEntry = it.next();
+							Duration taskDuration = taskEntry.getKey().getDuration();
+							long durationSeconds = taskDuration.getSeconds();
+							
+							System.out.println("WORKER RUNNABLE: Starting task: " + taskEntry.getKey().getTaskName());
+							for(long i = 0; i < durationSeconds; i++) {
+								System.out.println(taskEntry.getKey().getTaskName());
+								try {
+									Thread.sleep(1000);
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+							}
+							
+							try {
+								taskEntry.getValue().setResult("Task done: " + taskEntry.getKey().getTaskName());
+							} catch (RemoteException e) {
+								System.err.println("WORKER RUNNABLE: Could not set the task result to the client");
+								e.printStackTrace();
+							}
+							
+							it.remove();
+						}
+					}
+				}
+				try {
+					Thread.sleep(200);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		void stopWorker() {
+			stopRunning = true;
+		}
 
-	private Map<Task, IClient> tasksMap;
+		public Map<Task, IClient> getTasksMap() {
+			return tasksMap;
+		}
+		
+		public void putNewTask(Task task, IClient client) {
+			System.out.println("WORKER RUNNABLE: Received new task to put to the queue");
+			synchronized(tasksMap) {
+				tasksMap.put(task, client);
+			}
+			System.out.println("WORKER RUNNABLE: New task added");
+		}
+	}
+	
 	private int number;
+	private WorkerRunnable workerRunnable;
 	
 	
-	public WorkerImpl() throws RemoteException {
+	public WorkerImpl(IManager manager) throws RemoteException {
 		super();
-		tasksMap = new LinkedHashMap<>();
+		workerRunnable = new WorkerRunnable(new LinkedHashMap<>(), manager);
+		Thread workerThread = new Thread(workerRunnable);
+		workerThread.start();
 	}
 
 	@Override
@@ -95,17 +169,20 @@ public class WorkerImpl extends UnicastRemoteObject implements IWorker {
 			System.err.println("Incorrect argument passed!");		
 		} else {
 			Task taskToAdd = new Task(task, d);
-			tasksMap.put(taskToAdd, (IClient) o);
+			System.out.println("WORKER: Putting new task for the worker runnable");
+			workerRunnable.putNewTask(taskToAdd, (IClient) o);
 			taskAdded = true;
 		}
+		
+		System.out.println("WORKER: Task added!");
 		return taskAdded;
 	}
 
 	@Override
 	public String getState() throws RemoteException {
-		int tasksNum = tasksMap.size();
+		int tasksNum = workerRunnable.getTasksMap().size();
 		long sumaricDuration = 0;
-		for (Map.Entry<Task, IClient> task : tasksMap.entrySet()) {
+		for (Map.Entry<Task, IClient> task : workerRunnable.getTasksMap().entrySet()) {
 			sumaricDuration += task.getKey().getDuration().getSeconds();
 		}
 		String workerState = Integer.toString(tasksNum) + "," + Long.toString(sumaricDuration);
