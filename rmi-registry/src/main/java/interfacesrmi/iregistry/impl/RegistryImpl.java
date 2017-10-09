@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +21,7 @@ public class RegistryImpl extends UnicastRemoteObject implements IRegistry {
 	
 	public RegistryImpl(Registry rmiRegistry) throws RemoteException {
 		super();
-		workersMap = new HashMap<>();
+		workersMap = new LinkedHashMap<>();
 		registry = rmiRegistry;
 	}
 
@@ -32,7 +33,6 @@ public class RegistryImpl extends UnicastRemoteObject implements IRegistry {
 			workersMap.put(newObjectId, (IWorker) o);
 			objectAdded = true;
 			if (manager != null) {
-				manager.refresh();
 			}
 		} else {
 			if (IManager.class.isInstance(o)) {

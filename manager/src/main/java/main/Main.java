@@ -9,7 +9,7 @@ import interfacesrmi.IRegistry;
 import interfacesrmi.imanager.impl.ManagerImpl;
 
 public class Main {
-
+	
 	public static void main(String[] args) {
 		
 		try {
@@ -19,6 +19,7 @@ public class Main {
 			ManagerImpl manager = new ManagerImpl(registry);
 			int number = registry.registerObject(manager);
 			System.out.println("MANAGER: Manager registered with number " + number);
+			manager.createAndShowGUI();
 		} catch (RemoteException e) {
 			System.err.println("MANAGER: Manager error:\n");
 			e.printStackTrace();
@@ -28,5 +29,4 @@ public class Main {
 		}
 
 	}
-
 }

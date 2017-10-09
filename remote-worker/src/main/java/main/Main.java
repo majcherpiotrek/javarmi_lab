@@ -19,8 +19,10 @@ public class Main {
 			Registry rmiRegistry = LocateRegistry.getRegistry();
 			IRegistry registry = (IRegistry) rmiRegistry.lookup("Registry");
 			
-			WorkerImpl worker = new WorkerImpl();
+			IManager manager = (IManager) registry.getManager();
+			WorkerImpl worker = new WorkerImpl(manager);
 			worker.setNumber(registry.registerObject(worker));
+			manager.refresh();
 			System.out.println("WORKER: Worker number " + worker.getNumber() + " ready");
 		} catch (RemoteException e) {
 			System.err.println("WORKER: Worker error:\n");

@@ -24,7 +24,7 @@ public class Main {
 			IClient client = new ClientImpl();
 			IManager manager = (IManager) registry.getManager();
 			
-			Duration d = Duration.ofSeconds(20);
+			Duration d = Duration.ofSeconds(Integer.valueOf(args[1]));
 			manager.assignTask(args[0], d, client);
 		
 			System.out.println("CLIENT: Assigned task to manager. Waiting for result.");

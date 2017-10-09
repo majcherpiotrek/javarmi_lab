@@ -83,9 +83,11 @@ public class WorkerImpl extends UnicastRemoteObject implements IWorker {
 		
 		private Queue<Task> tasksQueue;
 		private boolean stopRunning = false;
+		private IManager manager;
 		
-		public WorkerRunnable() {
+		public WorkerRunnable(IManager manager) {
 			this.tasksQueue = new ConcurrentLinkedQueue<>();
+			this.manager = manager;
 		}
 		
 		@Override
@@ -94,7 +96,7 @@ public class WorkerImpl extends UnicastRemoteObject implements IWorker {
 			
 			while(!stopRunning) {
 				
-				Task currentTask = tasksQueue.poll();
+				Task currentTask = tasksQueue.peek();
 				
 				if (currentTask != null) {
 					Duration taskDuration = currentTask.getDuration();
@@ -112,11 +114,14 @@ public class WorkerImpl extends UnicastRemoteObject implements IWorker {
 							
 					try {
 						currentTask.getClient().setResult("Task done: " + currentTask.getTaskName());
+						this.manager.refresh();
 					} catch (RemoteException e) {
 						System.err.println("WORKER RUNNABLE: Could not set the task result to the client");
 						e.printStackTrace();
 					}								
 				}
+				
+				tasksQueue.poll();
 				
 				try {
 					Thread.sleep(200);
@@ -145,9 +150,9 @@ public class WorkerImpl extends UnicastRemoteObject implements IWorker {
 	private WorkerRunnable workerRunnable;
 	
 	
-	public WorkerImpl() throws RemoteException {
+	public WorkerImpl(IManager manager) throws RemoteException {
 		super();
-		workerRunnable = new WorkerRunnable();
+		workerRunnable = new WorkerRunnable(manager);
 		Thread workerThread = new Thread(workerRunnable);
 		workerThread.start();
 	}
