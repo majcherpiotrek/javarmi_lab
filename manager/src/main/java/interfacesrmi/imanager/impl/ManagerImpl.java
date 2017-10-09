@@ -28,7 +28,7 @@ public class ManagerImpl extends UnicastRemoteObject implements IManager {
 		} else {
 			IWorker chosenWorker = chooseWorkerWithShortestSumaricTasksTime(workersList);
 			chosenWorker.setTask(task, d, o);
-			System.out.println("MANAGER: Assigned task to worker number " + ((IWorker) chosenWorker).getNumber() );
+			System.out.println("MANAGER: Assigned task \"" + task + "\" to worker number " + ((IWorker) chosenWorker).getNumber() );
 		}
 	}
 
