@@ -81,7 +81,7 @@ public class RegistryImpl extends UnicastRemoteObject implements IRegistry {
 		Random rand = new Random();
 		boolean alreadyInTheMap;
 		do {
-			generatedId = rand.nextInt(Integer.MAX_VALUE);
+			generatedId = rand.nextInt(9999) + 1;
 			alreadyInTheMap = false;
 			for(Map.Entry<Integer, IWorker> worker : workersMap.entrySet()) {
 				if (managerId == generatedId.intValue() || worker.getKey().intValue() == generatedId.intValue()) {
