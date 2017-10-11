@@ -14,8 +14,7 @@ import javax.swing.JTable;
 import interfacesrmi.IManager;
 import interfacesrmi.IRegistry;
 import interfacesrmi.IWorker;
-import main.WorkersTableData;
-import main.WorkersTableData.WorkerInformation;
+import interfacesrmi.imanager.impl.WorkersTableData.WorkerInformation;
 
 public class ManagerImpl extends UnicastRemoteObject implements IManager {
 	

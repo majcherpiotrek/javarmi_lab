@@ -21,12 +21,11 @@ public class Main {
 			IRegistry registry = (IRegistry) rmiRegistry.lookup("Registry");
 			System.out.println("CLIENT: registry found");
 			
-			IClient client = new ClientImpl();
+			
 			IManager manager = (IManager) registry.getManager();
 			
-			Duration d = Duration.ofSeconds(Integer.valueOf(args[1]));
-			manager.assignTask(args[0], d, client);
-		
+			ClientImpl client = new ClientImpl(manager);
+			client.createAndShowGUI();
 			System.out.println("CLIENT: Assigned task to manager. Waiting for result.");
 		} catch (RemoteException e) {
 			System.err.println("CLIENT: Client error:\n");

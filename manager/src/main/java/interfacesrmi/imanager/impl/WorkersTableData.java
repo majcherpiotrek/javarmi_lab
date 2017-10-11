@@ -1,4 +1,4 @@
-package main;
+package interfacesrmi.imanager.impl;
 
 import java.util.LinkedList;
 import java.util.List;

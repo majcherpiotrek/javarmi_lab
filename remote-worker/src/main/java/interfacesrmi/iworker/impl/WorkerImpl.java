@@ -113,7 +113,7 @@ public class WorkerImpl extends UnicastRemoteObject implements IWorker {
 					}
 							
 					try {
-						currentTask.getClient().setResult("Task done: " + currentTask.getTaskName());
+						currentTask.getClient().setResult("WORKER: " + currentTask.getTaskName());
 						this.manager.refresh();
 					} catch (RemoteException e) {
 						System.err.println("WORKER RUNNABLE: Could not set the task result to the client");
